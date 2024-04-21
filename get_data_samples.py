@@ -19,7 +19,7 @@ class DromParser:
             if self.page.status_code != 200:
                 raise ValueError(f"Failed to get data from given url, error: {self.page.status_code}")
             self.soup = BeautifulSoup(self.page.text, "html.parser")
-        self.result_dict = {}
+        self.dict_of_resulting_dicts = {}
     def __get_car_ids(self):
         self.car_hrefs = [el.get("href") for el in self.soup.find_all("a", class_="css-4zflqt e1huvdhj1")]
         if len(self.car_hrefs) != 0:
@@ -67,18 +67,19 @@ class DromParser:
             return None
 
         for i in range(len(self.car_ids)):
-            name, year = self.car_names_and_years[i].split(', ')
+            brand_model, year = self.car_names_and_years[i].split(', ')
             engine_volume, engine_power = re.findall(r'\d+\.\d+|\d+', self.car_specifications[i][0])
-            self.result_dict[self.car_ids[i]] = \
-                {"href": self.car_hrefs[i],
-                 "name": name, "year": int(year),
+            self.dict_of_resulting_dicts[i] = \
+                {"id": self.car_ids[i],
+                 "href": self.car_hrefs[i],
+                 "brand_model": brand_model, "year": int(year),
                  "price": self.car_prices[i],
                  "volume": float(engine_volume),
                  "power": int(engine_power),
                  "gearbox_type": self.car_specifications[i][2].replace(',', ''),
                  #"wheel drive": int(self.car_specifications[i][3][0]),
                  "mileage": int(self.car_specifications[i][4].replace(' ', '').replace('км', ''))}
-        print(self.result_dict)
+        print(self.dict_of_resulting_dicts)
         return 0
     def parse(self, change_url_to_parse=None):
         try:
@@ -95,7 +96,7 @@ class DromParser:
             if self.format_data() is None:
                 return None
             print(colorama.Fore.GREEN + "page parsed successfully" + colorama.Style.RESET_ALL)
-            return self.result_dict
+            return self.dict_of_resulting_dicts
         except IndexError:
             print(colorama.Fore.RED + "Index error" + colorama.Style.RESET_ALL)
             return None
