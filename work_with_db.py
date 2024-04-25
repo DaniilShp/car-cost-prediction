@@ -1,4 +1,5 @@
 from DBConnection import DBContextManager
+import pymysql
 
 def select_dict(db_config: dict, _sql: str):
     with DBContextManager(db_config) as cursor:
@@ -16,10 +17,15 @@ def select_dict(db_config: dict, _sql: str):
             else:
                 return None
 
+
 def insert_dict(db_config: dict, *query_list):
     with DBContextManager(db_config) as cursor:
         if cursor is None:
             raise ValueError('Курсор не создан')
         else:
             for query in query_list:
-                cursor.execute(query)
+                try:
+                    cursor.execute(query)
+                except pymysql.err.IntegrityError as err:
+                    print(err)
+

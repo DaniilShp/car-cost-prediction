@@ -1,0 +1,6 @@
+{
+  "car_brand": "toyota/camry",
+  "db_table": "toyota_cars",
+  "home_url": "https://auto.drom.ru",
+  "settings_url": "?minyear=2010&maxyear=2015&mv=0.7&ph=1&pts=2&damaged=2&minpower=1&minprobeg=1"
+}
