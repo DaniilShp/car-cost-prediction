@@ -6,6 +6,8 @@ import pandas as pd
 from sql_data_load import SQLDataLoader
 import os
 import json
+from linear_regression_model import linear_regression_create
+from polynomial_regression_model import polynomial_regression_create
 from fully_connected_neural_network_model import FullyConnectedNeuralNetwork
 
 provider = SQLProvider(os.path.join(os.path.dirname(__file__), 'sql'))
@@ -68,20 +70,22 @@ if __name__ == '__main__':
         dataframe = pd.read_csv(regression_model_config['csv_dataframe_filename'])
 
     """______________ CREATING LINEAR REGRESSION MODEL ______________"""
-
+    x = dataframe[["production_year", "volume", "power", "mileage", "brand_model", "gearbox_type"]]
+    y = dataframe["price"]
+    linear_regression_create(x, y)
     """____________ CREATING POLYNOMIAL REGRESSION MODEL ____________"""
-
+    x, y = dataframe[["volume", "power", "mileage", "production_year"]], dataframe["price"]
+    polynomial_regression_create(x, y, degree=3)
     """_____________ CREATING FEEDFORWARD NEURAL NETWORK ____________"""
-
     x, y = dataframe[["volume", "power", "mileage", "production_year"]], dataframe["price"]
     model = FullyConnectedNeuralNetwork(input_size=(x.shape[1],))
     x_train, x_test, y_train, y_test = model.train_test_split(x, y, test_size=0.2, random_state=1)
     x_train, x_test = model.normalize_data(x_train), model.normalize_data(x_test)
     try:
-        model = model.load_model(regression_model_config['neural_model_fitted_filename'])
+        model.load_model(regression_model_config['neural_model_fitted_filename'])
         print("model has been loaded successfully")
     except (FileNotFoundError, OSError):
         print("Prepared model hasn't been found. Wait for model fitting, or change regression_model_config.json")
         model.fit(x_train, y_train, **regression_model_config)
     y_pred = model.predict(x_test)
-    FullyConnectedNeuralNetwork.print_error_metrics(y_test, y_pred, barplot=True)
+    model.print_error_metrics(y_test, y_pred, scatterplot=True, barplot=True, title="Нейронная сеть")
