@@ -14,10 +14,3 @@ def polynomial_regression_create(x, y, degree=3):
     model.fit(x_train_scaled, y_train)
     y_pred = model.predict(x_test_scaled)
     RegressionPrediction.print_error_metrics(y_test, y_pred, True, True, title="Полиномиальная регрессия")
-
-
-"""import time
-for i in range(3, 15):
-    time_start = time.time()
-    polynomial_regression_create(i)
-    print(f"iteration {i} time{time.time()-time_start}")"""

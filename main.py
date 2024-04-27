@@ -12,11 +12,11 @@ from fully_connected_neural_network_model import FullyConnectedNeuralNetwork
 
 provider = SQLProvider(os.path.join(os.path.dirname(__file__), 'sql'))
 
-with open('dbconfig.json') as f:
+with open('configs/dbconfig.json') as f:
     dbconfig = json.load(f)
-with open('parseconfig_toyota_cars.json', 'r') as f:
+with open('configs/parseconfig_toyota_cars.json', 'r') as f:
     parseconfig = json.load(f)
-with open('regression_model_config.json', 'r') as f:
+with open('configs/regression_model_config.json', 'r') as f:
     regression_model_config = json.load(f)
 
 
@@ -55,7 +55,7 @@ if __name__ == '__main__':
     """__________________ PARSING AND UPDATING DB __________________"""
     if answer == "y" or answer == "Y":
         parse_toyota_cars = parse_pages(dbconfig, parseconfig, DromParser)
-        parse_toyota_cars(pages_range=range(1, 10))
+        parse_toyota_cars(pages_range=range(parseconfig["page_range_start"], parseconfig["page_range_stop"]))
 
     print("Would you like to update csv_file with samples? (y/n)")
     answer = input()

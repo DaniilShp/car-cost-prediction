@@ -2,16 +2,6 @@ from sklearn.linear_model import LinearRegression
 import pandas as pd
 from regression_prediction import RegressionPrediction
 
-"""
-from matplotlib import pyplot as plt
-plt.scatter(x["production_year"], y)
-plt.show()
-plt.scatter(x["power"], y)
-plt.show()
-print(x.head(50))
-print(y)
-"""
-
 
 def linear_regression_create(x, y):
     x = pd.get_dummies(x, columns=['brand_model', 'gearbox_type'])  # one hot encoding

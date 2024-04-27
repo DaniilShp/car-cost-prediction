@@ -1,6 +1,7 @@
 from pymysql import connect
 from pymysql.err import OperationalError
 
+
 class DBContextManager:
     def __init__(self, config: dict):
         self.config = config

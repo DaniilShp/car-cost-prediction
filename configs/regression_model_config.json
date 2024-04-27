@@ -4,5 +4,5 @@
   "verbose": 2,
   "save": 1,
   "csv_dataframe_filename": "data/dataframe_toyota_cars.csv",
-  "neural_model_fitted_filename": "model_201911.h5"
+  "neural_model_fitted_filename": "models/model_192101_toyota.h5"
 }

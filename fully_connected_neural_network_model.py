@@ -15,10 +15,11 @@ class FullyConnectedNeuralNetwork(RegressionPrediction):
 
     def load_model(self, model_filename):
         self._model = load_model(model_filename)
+
     def fit(self, data, target, epochs=100, batch_size=1, verbose=2, save=False, **kwargs):
         history = self._model.fit(data, target, epochs=epochs, batch_size=batch_size, verbose=verbose)
         if save:
-            self._model.save(f'model_{round(history.history["mae"][-1])}.h5')
+            self._model.save(f'models/model_{round(history.history["mae"][-1])}.h5')
 
     def predict(self, data):
         predictions = self._model.predict(data)

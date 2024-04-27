@@ -16,12 +16,13 @@ class DromParser:
             self.headers = headers
         else:
             self.headers = user_agent_headers
-        self.url_to_parse = url_to_parse
-        self.page = requests.get(self.url_to_parse, headers=headers)
-        if self.page.status_code != 200:
-            raise ValueError(f"Failed to get data from given url, error: {self.page.status_code}")
-        self.soup = BeautifulSoup(self.page.text, "html.parser")
-        self.dict_of_resulting_dicts = {}
+        if url_to_parse is not None:
+            self.url_to_parse = url_to_parse
+            self.page = requests.get(self.url_to_parse, headers=headers)
+            if self.page.status_code != 200:
+                raise ValueError(f"Failed to get data from given url, error: {self.page.status_code}")
+            self.soup = BeautifulSoup(self.page.text, "html.parser")
+            self.dict_of_resulting_dicts = {}
 
     def set_debug_mode(self, on: bool):
         self.debug_mode = on
@@ -29,7 +30,8 @@ class DromParser:
     def __get_car_ids(self):
         self.car_hrefs = [el.get("href") for el in self.soup.find_all("a", class_="css-4zflqt e1huvdhj1")]
         if len(self.car_hrefs) != 0:
-            print(self.car_hrefs)
+            if self.debug_mode is True:
+                print(self.car_hrefs)
         else:
             print(colorama.Fore.RED + "not found car_hrefs")
             print(colorama.Style.RESET_ALL)  # Сброс цветовых настроек
@@ -40,32 +42,32 @@ class DromParser:
     def __get_car_names_and_years(self):
         self.car_names_and_years = [el.text for el in self.soup.find_all("div", class_="css-16kqa8y e3f4v4l2")]
         if len(self.car_names_and_years) != 0:
-            print(self.car_names_and_years)
+            if self.debug_mode is True:
+                print(self.car_names_and_years)
             return 0
-        else:
-            print(colorama.Fore.RED + "not found car_names_and_years" + colorama.Style.RESET_ALL)
-            return None
+        print(colorama.Fore.RED + "not found car_names_and_years" + colorama.Style.RESET_ALL)
+        return None
 
     def __get_car_specifications(self):
         spec = [el.text for el in self.soup.find_all("span", class_="css-1l9tp44 e162wx9x0")]
         print(spec)
         self.car_specifications = [[spec[i + j] for i in range(5)] for j in range(0, len(spec) - 6, 5)]
         if len(self.car_specifications) != 0:
-            print(self.car_specifications)
+            if self.debug_mode is True:
+                print(self.car_specifications)
             return 0
-        else:
-            print(colorama.Fore.RED + "not found car_engine_specifications" + colorama.Style.RESET_ALL)
-            return None
+        print(colorama.Fore.RED + "not found car_engine_specifications" + colorama.Style.RESET_ALL)
+        return None
 
     def __get_car_prices(self):
         car_prices = [el.text for el in self.soup.find_all("span", class_="css-46itwz e162wx9x0")]
         self.car_prices = [int(''.join([sym for sym in word if sym.isdigit()])) for word in car_prices]
         if len(self.car_prices) != 0:
-            print(self.car_prices)
+            if self.debug_mode is True:
+                print(self.car_prices)
             return 0
-        else:
-            print(colorama.Fore.RED + "not found car_prices" + colorama.Style.RESET_ALL)
-            return None
+        print(colorama.Fore.RED + "not found car_prices" + colorama.Style.RESET_ALL)
+        return None
 
     def format_data(self):
         if not (len(self.car_names_and_years)
@@ -97,16 +99,15 @@ class DromParser:
         try:
             if change_url_to_parse is not None:
                 self.__init__(url_to_parse=change_url_to_parse)
-            if self.__get_car_ids() is None:
+            if (
+                    self.__get_car_ids() is None or
+                    self.__get_car_names_and_years() is None or
+                    self.__get_car_specifications() is None or
+                    self.__get_car_prices() is None or
+                    self.format_data() is None
+            ):
                 return None
-            if self.__get_car_names_and_years() is None:
-                return None
-            if self.__get_car_specifications() is None:
-                return None
-            if self.__get_car_prices() is None:
-                return None
-            if self.format_data() is None:
-                return None
+
             print(colorama.Fore.GREEN + "page parsed successfully" + colorama.Style.RESET_ALL)
             return self.dict_of_resulting_dicts
         except IndexError:
