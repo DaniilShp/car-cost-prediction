@@ -33,4 +33,5 @@ class DBContextManager:
             self.connection.close()
         if exc_type:
             print(exc_type, exc_val)
+            raise exc_type(exc_val)
         return True

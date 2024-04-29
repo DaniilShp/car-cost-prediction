@@ -22,11 +22,10 @@ def select_dict(db_config: dict, _sql: str):
 def insert_dict(db_config: dict, *query_list):
     with DBContextManager(db_config) as cursor:
         if cursor is None:
-            raise DBConnectionError("курсор не создан")
+            raise DBConnectionError("Курсор не создан")
         else:
             for query in query_list:
                 try:
                     cursor.execute(query)
                 except pymysql.err.IntegrityError as err:
                     print(err)
-
