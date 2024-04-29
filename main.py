@@ -9,6 +9,11 @@ import json
 from linear_regression_model import linear_regression_create
 from polynomial_regression_model import polynomial_regression_create
 from fully_connected_neural_network_model import FullyConnectedNeuralNetwork
+from DBConnection import DBConnectionError
+from pymysql.err import OperationalError
+import colorama
+
+colorama.init()
 
 provider = SQLProvider(os.path.join(os.path.dirname(__file__), 'sql'))
 
@@ -38,7 +43,12 @@ def parse_pages(db_config: dict, parse_config: dict, parser: Any):
             for _dict in result_dicts.values():
                 _dict["table"] = _parse_config["db_table"]
             _sql = [provider.get('insert_data_samples.sql', **result_dict) for result_dict in result_dicts.values()]
-            insert_dict(_db_config, *_sql)
+            try:
+                insert_dict(_db_config, *_sql)
+            except DBConnectionError:
+                print(colorama.Fore.RED + "failed to connect to the DB" + colorama.Style.RESET_ALL)
+                raise DBConnectionError
+
         new_rows_amount = select_dict(dbconfig,
                                       "select count(car_id) as samples_amount from {db_table}".format(**_parse_config))
         print("new data samples found: ",
@@ -64,10 +74,18 @@ if __name__ == '__main__':
     if answer == "y" or answer == "Y":
         data_loader = SQLDataLoader()
         db_table = parseconfig['db_table']
-        local_path = data_loader.create_dataframe(dbconfig, f"select * from {db_table}", db_table)
-        dataframe = pd.read_csv(local_path)
+        try:
+            local_path = data_loader.create_dataframe(dbconfig, f"select * from {db_table}", db_table)
+            dataframe = pd.read_csv(local_path)
+        except (DBConnectionError, OperationalError):
+            print(colorama.Fore.RED + "failed to connect to the DB" + colorama.Style.RESET_ALL)
     else:
         dataframe = pd.read_csv(regression_model_config['csv_dataframe_filename'])
+
+    try:
+        _ = dataframe.empty
+    except NameError:
+        raise ValueError("dataframe hasn't been loaded")
 
     """______________ CREATING LINEAR REGRESSION MODEL ______________"""
     x = dataframe[["production_year", "volume", "power", "mileage", "brand_model", "gearbox_type"]]

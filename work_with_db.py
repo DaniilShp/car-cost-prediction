@@ -1,10 +1,11 @@
-from DBConnection import DBContextManager
+from DBConnection import DBContextManager, DBConnectionError
 import pymysql
+
 
 def select_dict(db_config: dict, _sql: str):
     with DBContextManager(db_config) as cursor:
         if cursor is None:
-            raise ValueError('Курсор не создан')
+            raise DBConnectionError("Курсор не создан")
         else:
             cursor.execute(_sql)
             products = cursor.fetchall()
@@ -21,7 +22,7 @@ def select_dict(db_config: dict, _sql: str):
 def insert_dict(db_config: dict, *query_list):
     with DBContextManager(db_config) as cursor:
         if cursor is None:
-            raise ValueError('Курсор не создан')
+            raise DBConnectionError("курсор не создан")
         else:
             for query in query_list:
                 try:

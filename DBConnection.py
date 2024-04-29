@@ -2,6 +2,10 @@ from pymysql import connect
 from pymysql.err import OperationalError
 
 
+class DBConnectionError(Exception):
+    pass
+
+
 class DBContextManager:
     def __init__(self, config: dict):
         self.config = config
@@ -19,9 +23,6 @@ class DBContextManager:
             return None
 
     def __exit__(self, exc_type, exc_val, exc_tb) -> bool:
-        if exc_type:
-            print(exc_type, exc_val)
-
         if self.cursor and self.connection:
             if exc_type:
                 self.connection.rollback()
@@ -30,4 +31,6 @@ class DBContextManager:
 
             self.cursor.close()
             self.connection.close()
+        if exc_type:
+            print(exc_type, exc_val)
         return True

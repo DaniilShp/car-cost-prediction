@@ -18,9 +18,11 @@ class RegressionPrediction:
         scaler = MinMaxScaler()
         data = scaler.fit_transform(data)
         return data
+
     @staticmethod
     def train_test_split(x, y, test_size=0.2, random_state=0, **kwargs):
         return train_test_split(x, y, test_size=test_size, random_state=random_state, **kwargs)
+
     @staticmethod
     def print_error_metrics(y, y_pred, barplot=False, scatterplot=False, title=""):
         mae = 0
@@ -42,7 +44,7 @@ class RegressionPrediction:
             RegressionPrediction.show_scatterplot_with_accuracies(accuracies, title)
 
     @staticmethod
-    def show_bars_with_accuracies(_accuracies, title):
+    def show_bars_with_accuracies(_accuracies: list[int, float], title):
         intervals = [i for i in range(0, 100, 10)]
         interval_values = [0] * len(intervals)
 
@@ -59,10 +61,10 @@ class RegressionPrediction:
         plt.show()
 
     @staticmethod
-    def show_scatterplot_with_accuracies(_accuracies, title):
+    def show_scatterplot_with_accuracies(_accuracies: list[int, float], title):
         plt.scatter(range(len(_accuracies)), _accuracies, c=[el/100 for el in _accuracies], cmap='RdYlGn_r')
         plt.xlabel('индекс предсказания')
-        plt.ylabel('относительная погрешность')
+        plt.ylabel('относительная погрешность, %')
         plt.title(f'{title}\nраспределение относительных погрешностей')
         plt.colorbar()
         plt.show()
