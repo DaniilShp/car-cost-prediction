@@ -2,7 +2,7 @@ from abc import abstractmethod
 from matplotlib import pyplot as plt
 from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import MinMaxScaler
-
+from sklearn.metrics import r2_score
 
 class RegressionPrediction:
     @abstractmethod
@@ -37,6 +37,7 @@ class RegressionPrediction:
         mae /= len(y_pred)
         count = count / len(y_pred) * 100
         print(f"absolute error: {mae}")
+        print("r2_score (коэффициент детерминации): {0}".format(r2_score(y, y_pred)))
         print(f"good predictions percent: {round(count)}")
         if barplot:
             RegressionPrediction.show_bars_with_accuracies(accuracies, title)
