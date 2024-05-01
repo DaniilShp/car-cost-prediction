@@ -8,6 +8,7 @@ import os
 import json
 from linear_regression_model import linear_regression_create
 from polynomial_regression_model import polynomial_regression_create
+from random_forest_regression import random_forest_regression_create
 from fully_connected_neural_network_model import FullyConnectedNeuralNetwork
 from DBConnection import DBConnectionError
 import colorama
@@ -90,6 +91,9 @@ if __name__ == '__main__':
     """____________ CREATING POLYNOMIAL REGRESSION MODEL ____________"""
     x, y = dataframe[["volume", "power", "mileage", "production_year"]], dataframe["price"]
     polynomial_regression_create(x, y, degree=3)
+    """____________ CREATING POLYNOMIAL REGRESSION MODEL ____________"""
+    x = dataframe[["production_year", "volume", "power", "mileage", "brand_model", "gearbox_type"]]
+    random_forest_regression_create(x, y)
     """_____________ CREATING FEEDFORWARD NEURAL NETWORK ____________"""
     x, y = dataframe[["volume", "power", "mileage", "production_year"]], dataframe["price"]
     model = FullyConnectedNeuralNetwork(input_size=(x.shape[1],))
