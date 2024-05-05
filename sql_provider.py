@@ -2,6 +2,7 @@
 import os
 from string import Template
 
+
 class SQLProvider:
     def __init__(self, file_path: str):
         self._scripts = {}

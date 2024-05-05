@@ -83,9 +83,9 @@ class DromParser:
             brand_model, year = self.car_names_and_years[i].split(', ')
             engine_volume, engine_power = re.findall(r'\d+\.\d+|\d+', self.car_specifications[i][0])
             self.dict_of_resulting_dicts[i] = \
-                {"id": self.car_ids[i],
+                {"car_id": self.car_ids[i],
                  "href": self.car_hrefs[i],
-                 "brand_model": brand_model, "year": int(year),
+                 "brand_model": brand_model, "production_year": int(year),
                  "price": self.car_prices[i],
                  "volume": float(engine_volume),
                  "power": int(engine_power),
