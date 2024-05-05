@@ -1,9 +1,7 @@
 from get_data_samples import DromParser
-from sql_provider import SQLProvider
 from typing import Any
 import pandas as pd
 from sql_data_load import SQLDataLoader
-import os
 import json
 from linear_regression_model import linear_regression_create
 from polynomial_regression_model import polynomial_regression_create
@@ -14,8 +12,6 @@ from sqlalchemy.exc import OperationalError
 import colorama
 
 colorama.init()
-
-provider = SQLProvider(os.path.join(os.path.dirname(__file__), 'sql'))
 
 with open('configs/dbconfig.json') as f:
     dbconfig = json.load(f)
