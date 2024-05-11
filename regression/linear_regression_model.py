@@ -1,6 +1,6 @@
 from sklearn.linear_model import LinearRegression
 import pandas as pd
-from regression_prediction import RegressionPrediction
+from regression.regression_prediction import RegressionPrediction
 
 
 def linear_regression_create(x: pd.DataFrame, y: (list[int, float], pd.DataFrame)):

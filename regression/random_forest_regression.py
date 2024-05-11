@@ -34,7 +34,7 @@ def random_forest_regression_create(x, y, forest_n=10):
 
 
 if __name__ == '__main__':
-    dataframe = pd.read_csv("data/dataframe_audi_cars.csv")
+    dataframe = pd.read_csv("../data/dataframe_audi_cars.csv")
     x, y = (dataframe[["volume", "power", "mileage", "production_year", "gearbox_type", "brand_model"]],
             dataframe["price"])
     cross_validation_result = random_forest_regression_create(x, y)

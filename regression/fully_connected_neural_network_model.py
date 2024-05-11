@@ -1,7 +1,7 @@
 from keras.models import Sequential
 from keras.layers import Dense
 from keras.models import load_model
-from regression_prediction import RegressionPrediction
+from regression.regression_prediction import RegressionPrediction
 
 
 class FullyConnectedNeuralNetwork(RegressionPrediction):

@@ -1,7 +1,7 @@
 from sklearn.preprocessing import PolynomialFeatures
 from sklearn.linear_model import LinearRegression
 from sklearn.preprocessing import MinMaxScaler
-from regression_prediction import RegressionPrediction
+from regression.regression_prediction import RegressionPrediction
 
 
 def polynomial_regression_create(x, y, degree=3):

@@ -1,16 +1,16 @@
-from get_data_samples import DromParser
-from sql_provider import SQLProvider
-from work_with_db import insert_dict, select_dict
+from parsing.drom_parser import DromParser
+from work_with_db.sql_provider import SQLProvider
 from typing import Any
 import pandas as pd
-from sql_data_load import SQLDataLoader
 import os
 import json
-from linear_regression_model import linear_regression_create
-from polynomial_regression_model import polynomial_regression_create
-from random_forest_regression import random_forest_regression_create
-from fully_connected_neural_network_model import FullyConnectedNeuralNetwork
-from DBConnection import DBConnectionError
+from regression.linear_regression_model import linear_regression_create
+from regression.polynomial_regression_model import polynomial_regression_create
+from regression.random_forest_regression import random_forest_regression_create
+from regression.fully_connected_neural_network_model import FullyConnectedNeuralNetwork
+from work_with_db.db_queries import insert_dict, select_dict
+from work_with_db.db_connection import DBConnectionError
+from work_with_db.sql_to_csv import SQLDataLoader
 import colorama
 
 colorama.init()
@@ -80,7 +80,6 @@ if __name__ == '__main__':
         db_table = parseconfig['db_table']
         local_path = data_loader.create_dataframe(dbconfig, f"select * from {db_table}", db_table)
         dataframe = pd.read_csv(local_path)
-        print(colorama.Fore.RED + "failed to connect to the DB" + colorama.Style.RESET_ALL)
     else:
         dataframe = pd.read_csv(regression_model_config['csv_dataframe_filename'])
 

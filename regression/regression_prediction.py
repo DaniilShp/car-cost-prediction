@@ -4,6 +4,7 @@ from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import MinMaxScaler
 from sklearn.metrics import r2_score
 
+
 class RegressionPrediction:
     @abstractmethod
     def fit(self, data, target, **kwargs):
@@ -63,7 +64,7 @@ class RegressionPrediction:
 
     @staticmethod
     def show_scatterplot_with_accuracies(_accuracies: list[int, float], title):
-        plt.scatter(range(len(_accuracies)), _accuracies, c=[el/100 for el in _accuracies], cmap='RdYlGn_r')
+        plt.scatter(range(len(_accuracies)), _accuracies, c=[el / 100 for el in _accuracies], cmap='RdYlGn_r')
         plt.xlabel('индекс предсказания')
         plt.ylabel('относительная погрешность, %')
         plt.title(f'{title}\nраспределение относительных погрешностей')
