@@ -22,7 +22,7 @@ class DromParser:
             if self.page.status_code != 200:
                 raise ValueError(f"Failed to get data from given url, error: {self.page.status_code}")
             self.soup = BeautifulSoup(self.page.text, "html.parser")
-            self.dict_of_resulting_dicts = {}
+            self.resulting_dicts = []
 
     def set_debug_mode(self, on: bool):
         self.debug_mode = on
@@ -30,8 +30,7 @@ class DromParser:
     def __get_car_ids(self):
         self.car_hrefs = [el.get("href") for el in self.soup.find_all("a", class_="css-4zflqt e1huvdhj1")]
         if len(self.car_hrefs) != 0:
-            if self.debug_mode is True:
-                print(self.car_hrefs)
+            print(self.car_hrefs) if self.debug_mode else ...
         else:
             print(colorama.Fore.RED + "not found car_hrefs")
             print(colorama.Style.RESET_ALL)  # Сброс цветовых настроек
@@ -42,19 +41,17 @@ class DromParser:
     def __get_car_names_and_years(self):
         self.car_names_and_years = [el.text for el in self.soup.find_all("div", class_="css-16kqa8y e3f4v4l2")]
         if len(self.car_names_and_years) != 0:
-            if self.debug_mode is True:
-                print(self.car_names_and_years)
+            print(self.car_names_and_years) if self.debug_mode else ...
             return 0
         print(colorama.Fore.RED + "not found car_names_and_years" + colorama.Style.RESET_ALL)
         return None
 
     def __get_car_specifications(self):
         spec = [el.text for el in self.soup.find_all("span", class_="css-1l9tp44 e162wx9x0")]
-        print(spec)
+        print(spec) if self.debug_mode else ...
         self.car_specifications = [[spec[i + j] for i in range(5)] for j in range(0, len(spec) - 6, 5)]
         if len(self.car_specifications) != 0:
-            if self.debug_mode is True:
-                print(self.car_specifications)
+            print(self.car_specifications) if self.debug_mode else ...
             return 0
         print(colorama.Fore.RED + "not found car_engine_specifications" + colorama.Style.RESET_ALL)
         return None
@@ -63,8 +60,7 @@ class DromParser:
         car_prices = [el.text for el in self.soup.find_all("span", class_="css-46itwz e162wx9x0")]
         self.car_prices = [int(''.join([sym for sym in word if sym.isdigit()])) for word in car_prices]
         if len(self.car_prices) != 0:
-            if self.debug_mode is True:
-                print(self.car_prices)
+            print(self.car_prices) if self.debug_mode else ...
             return 0
         print(colorama.Fore.RED + "not found car_prices" + colorama.Style.RESET_ALL)
         return None
@@ -82,7 +78,7 @@ class DromParser:
         for i in range(len(self.car_ids)):
             brand_model, year = self.car_names_and_years[i].split(', ')
             engine_volume, engine_power = re.findall(r'\d+\.\d+|\d+', self.car_specifications[i][0])
-            self.dict_of_resulting_dicts[i] = \
+            self.resulting_dicts.append(
                 {"id": self.car_ids[i],
                  "href": self.car_hrefs[i],
                  "brand_model": brand_model, "year": int(year),
@@ -92,7 +88,8 @@ class DromParser:
                  "gearbox_type": self.car_specifications[i][2].replace(',', ''),
                  # "wheel drive": int(self.car_specifications[i][3][0]),
                  "mileage": int(self.car_specifications[i][4].replace(' ', '').replace('км', ''))}
-        print(self.dict_of_resulting_dicts)
+            )
+        print(self.resulting_dicts) if self.debug_mode else ...
         return 0
 
     def parse(self, change_url_to_parse=None):
@@ -109,7 +106,7 @@ class DromParser:
                 return None
 
             print(colorama.Fore.GREEN + "page parsed successfully" + colorama.Style.RESET_ALL)
-            return self.dict_of_resulting_dicts
+            return self.resulting_dicts
         except IndexError:
             print(colorama.Fore.RED + "Index error" + colorama.Style.RESET_ALL)
             return None

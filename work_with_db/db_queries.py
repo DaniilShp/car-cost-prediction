@@ -1,4 +1,4 @@
-from db_connection import DBContextManager, DBConnectionError
+from work_with_db.db_connection import DBContextManager, DBConnectionError
 import pymysql
 
 

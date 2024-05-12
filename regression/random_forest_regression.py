@@ -1,7 +1,7 @@
 from sklearn.ensemble import RandomForestRegressor
 from sklearn.model_selection import train_test_split, cross_validate
 import pandas as pd
-from regression_prediction import RegressionPrediction
+from regression.regression_prediction import RegressionPrediction
 from sklearn.model_selection import RandomizedSearchCV
 from scipy.stats import randint
 

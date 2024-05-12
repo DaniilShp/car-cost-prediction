@@ -7,7 +7,7 @@ import json
 from regression.linear_regression_model import linear_regression_create
 from regression.polynomial_regression_model import polynomial_regression_create
 from regression.random_forest_regression import random_forest_regression_create
-from regression.fully_connected_neural_network_model import FullyConnectedNeuralNetwork
+#from regression.fully_connected_neural_network_model import FullyConnectedNeuralNetwork
 from work_with_db.db_queries import insert_dict, select_dict
 from work_with_db.db_connection import DBConnectionError
 from work_with_db.sql_to_csv import SQLDataLoader
@@ -44,9 +44,9 @@ def parse_pages(db_config: dict, parse_config: dict, parser: Any):
                 f"{_parse_config['home_url']}/{_parse_config['car_brand']}/page{page}/{_parse_config['settings_url']}")
             if result_dicts is None:
                 continue
-            for _dict in result_dicts.values():
+            for _dict in result_dicts:
                 _dict["table"] = _parse_config["db_table"]
-            _sql = [provider.get('insert_data_samples.sql', **result_dict) for result_dict in result_dicts.values()]
+            _sql = [provider.get('insert_data_samples.sql', **result_dict) for result_dict in result_dicts]
             try:
                 insert_dict(_db_config, *_sql)
             except DBConnectionError:
