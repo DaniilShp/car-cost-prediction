@@ -3,7 +3,7 @@ import json
 
 
 from bs4 import BeautifulSoup
-from parsing import drom_parser
+import parsing.drom_parser as drom_parser
 
 
 class TestDromParser(unittest.TestCase):

@@ -1,14 +1,12 @@
-import abc
-import requests
-import aiohttp
-from bs4 import BeautifulSoup
 import re
+import abc
+import aiohttp
+import requests
 import colorama
+from bs4 import BeautifulSoup
+import config
 
 colorama.init()
-
-headers = {
-    'user-agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 YaBrowser/24.1.0.0 Safari/537.36'}
 
 
 class HtmlLoadError(Exception):
@@ -20,8 +18,7 @@ class HtmlLoadError(Exception):
 class BaseDromParser:
     def __init__(self, debug_mode: bool = False):
         self.debug_mode = debug_mode
-        #self.headers = {'user-agent': user_agents[random.randint(0, 7)]}
-        self.headers = headers
+        self.headers = config._headers
         self.url_to_parse = None
         self.page = None
         self.soup = None
@@ -123,7 +120,7 @@ class BaseDromParser:
 class SyncDromParser(BaseDromParser):
     def load_html(self, url):
         self.url_to_parse = url
-        self.page = requests.get(self.url_to_parse, headers=headers)
+        self.page = requests.get(self.url_to_parse, headers=self.headers)
         if self.page.status_code != 200:
             raise ValueError(f"Failed to get data from given url, error: {self.page.status_code}")
         self.soup = BeautifulSoup(self.page.text, "html.parser")
