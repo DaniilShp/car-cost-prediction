@@ -7,11 +7,6 @@ import colorama
 
 colorama.init()
 
-user_agents = [i for i in range(27)] # amount of user_agents in file parsing/user_agents.txt
-with open("parsing/user_agents.txt", "r") as f:
-    for i, line in enumerate(f):
-        user_agents[i] = line
-
 headers = {
     'user-agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 YaBrowser/24.1.0.0 Safari/537.36'}
 
@@ -143,6 +138,7 @@ class AsyncDromParser(BaseDromParser):
         self.url_to_parse = url
         async with aiohttp.ClientSession() as session:
             async with session.get(self.url_to_parse, headers=self.headers) as page:
+                self.page = page
                 if page.status != 200:
                     raise HtmlLoadError(f"Failed to get data from the URL, error: {page.status}", page.status)
                 html = await page.text()
