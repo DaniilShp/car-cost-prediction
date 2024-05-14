@@ -16,6 +16,12 @@ headers = {
     'user-agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 YaBrowser/24.1.0.0 Safari/537.36'}
 
 
+class HtmlLoadError(Exception):
+    def __init__(self, message, value):
+        self.value = value
+        super().__init__(message)
+
+
 class BaseDromParser:
     def __init__(self, debug_mode: bool = False):
         self.debug_mode = debug_mode
@@ -133,17 +139,12 @@ class SyncDromParser(BaseDromParser):
 
 
 class AsyncDromParser(BaseDromParser):
-    class HtmlLoadError(Exception):
-        def __init__(self, message, value):
-            self.value = value
-            super().__init__(message)
-
     async def load_html(self, url):
         self.url_to_parse = url
         async with aiohttp.ClientSession() as session:
             async with session.get(self.url_to_parse, headers=self.headers) as page:
                 if page.status != 200:
-                    raise self.HtmlLoadError(f"Failed to get data from the URL, error: {page.status}", page.status)
+                    raise HtmlLoadError(f"Failed to get data from the URL, error: {page.status}", page.status)
                 html = await page.text()
                 self.soup = BeautifulSoup(html, "html.parser")
 
@@ -151,7 +152,7 @@ class AsyncDromParser(BaseDromParser):
         try:
             await self.load_html(change_url_to_parse)
             super().parse(change_url_to_parse)
-        except self.HtmlLoadError as err:
+        except HtmlLoadError as err:
             if err.value != 503:
                 raise err
             print(err)
