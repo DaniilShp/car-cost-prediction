@@ -1,33 +1,39 @@
+import abc
 import requests
+import aiohttp
 from bs4 import BeautifulSoup
 import re
 import colorama
 
 colorama.init()
 
+user_agents = [i for i in range(27)] # amount of user_agents in file parsing/user_agents.txt
+with open("parsing/user_agents.txt", "r") as f:
+    for i, line in enumerate(f):
+        user_agents[i] = line
+
 headers = {
     'user-agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 YaBrowser/24.1.0.0 Safari/537.36'}
 
 
-class DromParser:
-    def __init__(self, url_to_parse: str = None, user_agent_headers: str = None, debug_mode: bool = False):
+class BaseDromParser:
+    def __init__(self, debug_mode: bool = False):
         self.debug_mode = debug_mode
-        if user_agent_headers is None:
-            self.headers = headers
-        else:
-            self.headers = user_agent_headers
-        if url_to_parse is not None:
-            self.url_to_parse = url_to_parse
-            self.page = requests.get(self.url_to_parse, headers=headers)
-            if self.page.status_code != 200:
-                raise ValueError(f"Failed to get data from given url, error: {self.page.status_code}")
-            self.soup = BeautifulSoup(self.page.text, "html.parser")
-            self.resulting_dicts = []
+        #self.headers = {'user-agent': user_agents[random.randint(0, 7)]}
+        self.headers = headers
+        self.url_to_parse = None
+        self.page = None
+        self.soup = None
+        self.resulting_dicts = []
+
+    @abc.abstractmethod
+    def load_html(self, url):
+        pass
 
     def set_debug_mode(self, on: bool):
         self.debug_mode = on
 
-    def __get_car_ids(self):
+    def _get_car_ids(self):
         self.car_hrefs = [el.get("href") for el in self.soup.find_all("a", class_="css-4zflqt e1huvdhj1")]
         if len(self.car_hrefs) != 0:
             print(self.car_hrefs) if self.debug_mode else ...
@@ -38,7 +44,7 @@ class DromParser:
         self.car_ids = [int(el.split('/')[-1].split('.')[0]) for el in self.car_hrefs]
         return 0
 
-    def __get_car_names_and_years(self):
+    def _get_car_names_and_years(self):
         self.car_names_and_years = [el.text for el in self.soup.find_all("div", class_="css-16kqa8y e3f4v4l2")]
         if len(self.car_names_and_years) != 0:
             print(self.car_names_and_years) if self.debug_mode else ...
@@ -46,7 +52,7 @@ class DromParser:
         print(colorama.Fore.RED + "not found car_names_and_years" + colorama.Style.RESET_ALL)
         return None
 
-    def __get_car_specifications(self):
+    def _get_car_specifications(self):
         spec = [el.text for el in self.soup.find_all("span", class_="css-1l9tp44 e162wx9x0")]
         print(spec) if self.debug_mode else ...
         self.car_specifications = [[spec[i + j] for i in range(5)] for j in range(0, len(spec) - 6, 5)]
@@ -56,7 +62,7 @@ class DromParser:
         print(colorama.Fore.RED + "not found car_engine_specifications" + colorama.Style.RESET_ALL)
         return None
 
-    def __get_car_prices(self):
+    def _get_car_prices(self):
         car_prices = [el.text for el in self.soup.find_all("span", class_="css-46itwz e162wx9x0")]
         self.car_prices = [int(''.join([sym for sym in word if sym.isdigit()])) for word in car_prices]
         if len(self.car_prices) != 0:
@@ -92,15 +98,13 @@ class DromParser:
         print(self.resulting_dicts) if self.debug_mode else ...
         return 0
 
-    def parse(self, change_url_to_parse=None):
+    def parse(self, change_url_to_parse):
         try:
-            if change_url_to_parse is not None:
-                self.__init__(url_to_parse=change_url_to_parse)
             if (
-                    self.__get_car_ids() is None or
-                    self.__get_car_names_and_years() is None or
-                    self.__get_car_specifications() is None or
-                    self.__get_car_prices() is None or
+                    self._get_car_ids() is None or
+                    self._get_car_names_and_years() is None or
+                    self._get_car_specifications() is None or
+                    self._get_car_prices() is None or
                     self.format_data() is None
             ):
                 return None
@@ -113,3 +117,41 @@ class DromParser:
         except ValueError:
             print(colorama.Fore.RED + "Value error" + colorama.Style.RESET_ALL)
             return None
+
+
+class SyncDromParser(BaseDromParser):
+    def load_html(self, url):
+        self.url_to_parse = url
+        self.page = requests.get(self.url_to_parse, headers=headers)
+        if self.page.status_code != 200:
+            raise ValueError(f"Failed to get data from given url, error: {self.page.status_code}")
+        self.soup = BeautifulSoup(self.page.text, "html.parser")
+
+    def parse(self, change_url_to_parse):
+        self.load_html(change_url_to_parse)
+        super().parse(change_url_to_parse)
+
+
+class AsyncDromParser(BaseDromParser):
+    class HtmlLoadError(Exception):
+        def __init__(self, message, value):
+            self.value = value
+            super().__init__(message)
+
+    async def load_html(self, url):
+        self.url_to_parse = url
+        async with aiohttp.ClientSession() as session:
+            async with session.get(self.url_to_parse, headers=self.headers) as page:
+                if page.status != 200:
+                    raise self.HtmlLoadError(f"Failed to get data from the URL, error: {page.status}", page.status)
+                html = await page.text()
+                self.soup = BeautifulSoup(html, "html.parser")
+
+    async def parse(self, change_url_to_parse):
+        try:
+            await self.load_html(change_url_to_parse)
+            super().parse(change_url_to_parse)
+        except self.HtmlLoadError as err:
+            if err.value != 503:
+                raise err
+            print(err)

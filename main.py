@@ -1,4 +1,6 @@
-from parsing.drom_parser import DromParser
+import asyncio
+import time
+from parsing.drom_parser import AsyncDromParser, SyncDromParser
 from work_with_db.sql_provider import SQLProvider
 from typing import Any
 import pandas as pd
@@ -14,7 +16,7 @@ from work_with_db.sql_to_csv import SQLDataLoader
 import colorama
 
 colorama.init()
-
+ASYNC = False
 provider = SQLProvider(os.path.join(os.path.dirname(__file__), 'sql'))
 
 with open('configs/dbconfig.json') as f:
@@ -38,10 +40,10 @@ def parse_pages(db_config: dict, parse_config: dict, parser: Any):
             print(colorama.Fore.RED + "failed to connect to the DB" + colorama.Style.RESET_ALL)
             return None
         for page in pages_range:
-            print(page)
             result_dicts = _parser.parse(
                 change_url_to_parse=
                 f"{_parse_config['home_url']}/{_parse_config['car_brand']}/page{page}/{_parse_config['settings_url']}")
+            print(page)
             if result_dicts is None:
                 continue
             for _dict in result_dicts:
@@ -57,9 +59,46 @@ def parse_pages(db_config: dict, parse_config: dict, parser: Any):
                                       "select count(car_id) as samples_amount from {db_table}".format(**_parse_config))
         print("new data samples found: ",
               new_rows_amount[0]["samples_amount"] - data_samples_amount[0]["samples_amount"])
-        print("data samples now exists: ", data_samples_amount[0]["samples_amount"])
+        print("data samples now exists: ", new_rows_amount[0]["samples_amount"])
 
     return inner
+
+
+async def parse_page(db_config: dict, parse_config: dict, parser: Any, page: int):
+    _parser = parser()
+    await _parser.parse(
+        change_url_to_parse=
+        f"{parse_config['home_url']}/{parse_config['car_brand']}/page{page}/{parse_config['settings_url']}")
+    print(page)
+    if _parser.resulting_dicts is None:
+        return None
+    for _dict in _parser.resulting_dicts:
+        _dict["table"] = parse_config["db_table"]
+    _sql = [provider.get('insert_data_samples.sql', **result_dict) for result_dict in _parser.resulting_dicts]
+    try:
+        insert_dict(db_config, *_sql)
+    except DBConnectionError:
+        print(colorama.Fore.RED + "failed to connect to the DB" + colorama.Style.RESET_ALL)
+        return None
+
+
+async def async_parse_pages(db_config: dict, parse_config: dict, parser: Any, pages_range: range):
+    _parse_config = parse_config
+    _db_config = db_config
+    tasks = [parse_page(_db_config, _parse_config, parser, page) for page in pages_range]
+    task_list = [asyncio.create_task(task) for task in tasks]
+    try:
+        data_samples_amount = select_dict(dbconfig, "select count(car_id) as samples_amount from {db_table}".format(
+            **_parse_config))
+    except DBConnectionError:
+        print(colorama.Fore.RED + "failed to connect to the DB" + colorama.Style.RESET_ALL)
+        return None
+    await asyncio.gather(*task_list)
+    new_rows_amount = select_dict(dbconfig,
+                                  "select count(car_id) as samples_amount from {db_table}".format(**_parse_config))
+    print("new data samples found: ",
+          new_rows_amount[0]["samples_amount"] - data_samples_amount[0]["samples_amount"])
+    print("data samples now exists: ", new_rows_amount[0]["samples_amount"])
 
 
 if __name__ == '__main__':
@@ -68,8 +107,20 @@ if __name__ == '__main__':
 
     """__________________ PARSING AND UPDATING DB __________________"""
     if answer == "y" or answer == "Y":
-        parse_toyota_cars = parse_pages(dbconfig, parseconfig, DromParser)
-        parse_toyota_cars(pages_range=range(parseconfig["page_range_start"], parseconfig["page_range_stop"]))
+
+        time_start = time.time()
+
+        if ASYNC:
+            parse_params = (dbconfig, parseconfig, AsyncDromParser,
+                            range(parseconfig["page_range_start"],
+                                  parseconfig["page_range_stop"]))
+            loop = asyncio.get_event_loop()
+            loop.run_until_complete(async_parse_pages(*parse_params))
+        else:
+            parse_toyota_cars = parse_pages(dbconfig, parseconfig, SyncDromParser)
+            parse_toyota_cars(pages_range=range(parseconfig["page_range_start"], parseconfig["page_range_stop"]))
+
+        print(f"time left: {time.time() - time_start}")
 
     print("Would you like to update csv_file with samples? (y/n)")
     answer = input()
