@@ -1,11 +1,12 @@
-from abc import abstractmethod
+import abc
+from abc import abstractmethod, ABCMeta
 from matplotlib import pyplot as plt
 from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import MinMaxScaler
 from sklearn.metrics import r2_score
 
 
-class RegressionPrediction:
+class RegressionPrediction(metaclass=ABCMeta):
     @abstractmethod
     def fit(self, data, target, **kwargs):
         pass

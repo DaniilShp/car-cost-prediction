@@ -1,5 +1,6 @@
 import unittest
 import json
+import os
 
 
 from bs4 import BeautifulSoup
@@ -36,12 +37,12 @@ class TestDromParser(unittest.TestCase):
 
     def test_parsing(self):
         filename = "audi_a4"
-        parser = drom_parser.BaseDromParser()
-        with open(f"test_html/{filename}.html", "r") as f:
+        parser = drom_parser.SyncDromParser()
+        with open(os.path.join("test_html", f"{filename}.html"), "r") as f:
             parser.page = f.read()
             parser.soup = BeautifulSoup(parser.page, "html.parser")
-        parser.parse("https://auto.drom.ru/")
-        with open(f"json_answer/{filename}.json", 'r') as file:
+        drom_parser.BaseDromParser.parse(parser, "https://auto.drom.ru/")
+        with open(os.path.join("json_answer", f"{filename}.json"), 'r') as file:
             deserialized_result = json.load(file)
         self.assertEqual(parser.resulting_dicts, deserialized_result)
 

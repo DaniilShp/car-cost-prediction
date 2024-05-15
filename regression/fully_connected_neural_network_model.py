@@ -1,3 +1,5 @@
+import os.path
+
 from keras.models import Sequential
 from keras.layers import Dense
 from keras.models import load_model
@@ -19,7 +21,7 @@ class FullyConnectedNeuralNetwork(RegressionPrediction):
     def fit(self, data, target, epochs: int = 100, batch_size: int = 1, verbose: int = 2, save: bool = False, **kwargs):
         history = self._model.fit(data, target, epochs=epochs, batch_size=batch_size, verbose=verbose)
         if save:
-            self._model.save(f'models/model_{round(history.history["mae"][-1])}.h5')
+            self._model.save(os.path.join('models', f'model_{round(history.history["mae"][-1])}.h5'))
 
     def predict(self, data):
         predictions = self._model.predict(data)

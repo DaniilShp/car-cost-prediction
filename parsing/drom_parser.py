@@ -15,7 +15,7 @@ class HtmlLoadError(Exception):
         super().__init__(message)
 
 
-class BaseDromParser:
+class BaseDromParser(metaclass=abc.ABCMeta):
     def __init__(self, debug_mode: bool = False):
         self.debug_mode = debug_mode
         self.headers = config._headers

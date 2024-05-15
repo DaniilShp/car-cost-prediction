@@ -1,3 +1,4 @@
+import os
 import pandas as pd
 import pymysql
 from sys import exit
@@ -23,6 +24,6 @@ class SQLDataLoader:
             exit()
         self.dataframe = pd.read_sql(_sql, con=db_connection)
         db_connection.close()
-        self.local_path = f'data/dataframe_{table_name}.csv'
+        self.local_path = os.path.join("data", f'dataframe_{table_name}.csv')
         self.dataframe.to_csv(self.local_path, index=False)
         return self.local_path
